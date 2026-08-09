@@ -1,0 +1,79 @@
+# ─────────────────────────────────────────────
+#  PROMPTORY — .gitignore
+#  Everything listed here will NEVER be tracked
+#  by git, even if you accidentally do `git add .`
+# ─────────────────────────────────────────────
+
+
+# ── Project planning / internal dev docs ──────
+# The kickstart document is for internal use only;
+# it doesn't belong in the public repo.
+project-kickstart.md
+
+
+# ── Python virtual environment ─────────────────
+# The venv folder is created locally by `python -m venv`.
+# It contains all installed packages — never commit this;
+# everyone installs their own from requirements.txt instead.
+venv/
+.venv/
+env/
+ENV/
+
+
+# ── Python byte-compiled files ─────────────────
+# Python auto-generates these .pyc files for speed;
+# they are machine-specific and should never be committed.
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+
+# ── SQLite database file ───────────────────────
+# The actual database lives here. It's local data —
+# each person who clones this repo will generate their own.
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+
+# ── Environment / secrets file ────────────────
+# .env holds your API keys and private config.
+# .env.example (the template WITHOUT real keys) IS committed.
+.env
+
+
+# ── OS-generated junk ─────────────────────────
+# macOS puts .DS_Store in every folder it touches.
+# Windows creates Thumbs.db in image folders.
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# ── Editor / IDE settings ─────────────────────
+# These are personal editor preferences — not part of the project.
+.vscode/
+.idea/
+*.code-workspace
+
+
+# ── Python distribution / packaging artifacts ─
+# Only relevant if you ever try to publish this as a package.
+dist/
+build/
+*.egg-info/
+*.egg
+
+
+# ── Testing & coverage artifacts ──────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+
+# ── Logs ──────────────────────────────────────
+*.log
+logs/
