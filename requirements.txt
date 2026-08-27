@@ -1,0 +1,26 @@
+# ─────────────────────────────────────────────────────────────────
+#  PROMPTORY — requirements.txt
+#
+#  This file exists for people who DON'T use uv.
+#  If you're using uv (recommended), dependencies are already
+#  tracked in pyproject.toml — just run `uv sync` instead.
+#
+#  For everyone else (plain pip):
+#    pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────────
+
+# ── Web framework ──────────────────────────────
+fastapi==0.141.1          # The API framework — handles routing, validation, docs
+uvicorn==0.52.4           # ASGI server — actually runs the FastAPI app
+
+# ── Database ────────────────────────────────────
+sqlalchemy==2.0.52        # ORM — lets us define tables as Python classes
+
+# ── Templating ──────────────────────────────────
+jinja2==3.1.6             # Renders our HTML templates server-side
+
+# ── Config / secrets ────────────────────────────
+python-dotenv==1.2.3      # Loads .env file into environment variables
+
+# ── Pydantic (auto-installed with FastAPI, pinned for safety) ───
+pydantic==2.13.4          # Data validation — FastAPI uses this for request/response schemas
