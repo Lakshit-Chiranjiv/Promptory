@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from app.database import Base, engine
 import app.models  # noqa: F401 — must import models so they register with Base.metadata
 
-from app.routes import prompts, versions, test_cases
+from app.routes import prompts, versions, test_cases, runs
 
 # Create all tables that don't exist yet — safe to call on every startup
 Base.metadata.create_all(bind=engine)
@@ -24,3 +24,4 @@ app = FastAPI(
 app.include_router(prompts.router)
 app.include_router(versions.router)
 app.include_router(test_cases.router)
+app.include_router(runs.router)
