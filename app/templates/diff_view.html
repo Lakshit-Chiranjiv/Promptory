@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Diff v{{ v1 }} → v{{ v2 }} — {{ prompt.name }} — Promptory{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/">All Prompts</a>
+  <span class="sep">/</span>
+  <a href="/p/{{ prompt.id }}">{{ prompt.name }}</a>
+  <span class="sep">/</span>
+  <span class="current">Diff v{{ v1 }} → v{{ v2 }}</span>
+</div>
+
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>
+      Diff: v{{ v1 }} → v{{ v2 }}
+    </h1>
+    <p>{{ prompt.name }}</p>
+  </div>
+  <div>
+    <a href="/p/{{ prompt.id }}" class="btn btn-secondary">
+      ← Back to Prompt
+    </a>
+  </div>
+</div>
+
+<!-- Unified Diff Card -->
+<div class="card">
+  <div class="card-header">
+    <h2>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-light)">
+        <circle cx="18" cy="18" r="3"></circle>
+        <circle cx="6" cy="6" r="3"></circle>
+        <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+        <line x1="6" y1="9" x2="6" y2="21"></line>
+      </svg>
+      Unified Diff
+    </h2>
+  </div>
+  <div class="diff-container" style="border:none; border-radius:0">
+    {% if diff %}
+      {% for line in diff.splitlines() %}
+        {% if line.startswith('+++') or line.startswith('---') %}
+          <div class="diff-line diff-meta">{{ line }}</div>
+        {% elif line.startswith('+') %}
+          <div class="diff-line diff-add">{{ line }}</div>
+        {% elif line.startswith('-') %}
+          <div class="diff-line diff-remove">{{ line }}</div>
+        {% elif line.startswith('@@') %}
+          <div class="diff-line diff-hunk">{{ line }}</div>
+        {% else %}
+          <div class="diff-line" style="color:var(--text-muted)">{{ line }}</div>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <div class="diff-empty">No differences between v{{ v1 }} and v{{ v2 }}.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Side-by-side View -->
+<div class="grid-2">
+  <div class="card" style="margin-bottom:0">
+    <div class="card-header">
+      <h2>
+        <span class="version-badge">v{{ v1 }}</span>
+        {% if version_a.commit_message %}
+        <span style="font-size:13px; font-weight:500; color:var(--text-muted)">"{{ version_a.commit_message }}"</span>
+        {% endif %}
+      </h2>
+      <button type="button" class="btn-copy" onclick="copyText(this, `{{ version_a.content | replace('`', '\\`') | replace('$', '\\$') }}`)">
+        Copy
+      </button>
+    </div>
+    <div class="card-body" style="padding:0">
+      <pre class="prompt-code-content" style="border:none; border-radius:0">{{ version_a.content }}</pre>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:0">
+    <div class="card-header">
+      <h2>
+        <span class="version-badge">v{{ v2 }}</span>
+        {% if version_b.commit_message %}
+        <span style="font-size:13px; font-weight:500; color:var(--text-muted)">"{{ version_b.commit_message }}"</span>
+        {% endif %}
+      </h2>
+      <button type="button" class="btn-copy" onclick="copyText(this, `{{ version_b.content | replace('`', '\\`') | replace('$', '\\$') }}`)">
+        Copy
+      </button>
+    </div>
+    <div class="card-body" style="padding:0">
+      <pre class="prompt-code-content" style="border:none; border-radius:0">{{ version_b.content }}</pre>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px">
+  <a href="/p/{{ prompt.id }}" class="btn btn-secondary">
+    ← Back to {{ prompt.name }}
+  </a>
+</div>
+{% endblock %}

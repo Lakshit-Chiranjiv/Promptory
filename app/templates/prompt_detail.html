@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}{{ prompt.name }} — Promptory{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/">All Prompts</a>
+  <span class="sep">/</span>
+  <span class="current">{{ prompt.name }}</span>
+</div>
+
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>
+      {{ prompt.name }}
+      <span class="badge badge-neutral" style="font-size:12px">ID: {{ prompt.id }}</span>
+    </h1>
+    {% if prompt.description %}
+    <p>{{ prompt.description }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Versions Section ──────────────────────────────── -->
+<div style="margin-bottom:36px">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+    <h2 style="font-size:18px; font-weight:700; letter-spacing:-0.3px; color:var(--text-main); display:flex; align-items:center; gap:8px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-light)">
+        <circle cx="12" cy="12" r="4"></circle>
+        <line x1="1.05" y1="12" x2="7" y2="12"></line>
+        <line x1="17.01" y1="12" x2="22.96" y2="12"></line>
+      </svg>
+      Version History
+      <span class="badge badge-blue">{{ prompt.versions | length }}</span>
+    </h2>
+  </div>
+
+  {% if prompt.versions %}
+    {% for version in prompt.versions %}
+    <div class="version-card">
+      <div class="version-card-top">
+        <div class="version-meta">
+          <span class="version-badge">v{{ version.version_number }}</span>
+          {% if version.commit_message %}
+          <span class="version-commit">"{{ version.commit_message }}"</span>
+          {% else %}
+          <span class="version-commit-empty">no commit message</span>
+          {% endif %}
+          <span class="version-date">• {{ version.created_at.strftime('%b %d, %Y %H:%M') }}</span>
+        </div>
+
+        <div class="version-actions">
+          <button
+            class="btn btn-run btn-sm"
+            hx-post="/v/{{ version.id }}/run"
+            hx-target="#run-results-{{ version.id }}"
+            hx-swap="innerHTML"
+            hx-indicator="#spinner-{{ version.id }}"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Run Tests
+          </button>
+          <span id="spinner-{{ version.id }}" class="htmx-indicator">⏳ running…</span>
+
+          <a href="/v/{{ version.id }}/runs" class="btn btn-secondary btn-sm">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            History
+          </a>
+        </div>
+      </div>
+
+      <div class="version-body">
+        <div class="prompt-code-wrap">
+          <div class="prompt-code-bar">
+            <span>PROMPT TEMPLATE</span>
+            <button type="button" class="btn-copy" onclick="copyText(this, `{{ version.content | replace('`', '\\`') | replace('$', '\\$') }}`)">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy
+            </button>
+          </div>
+          <pre class="prompt-code-content">{{ version.content }}</pre>
+        </div>
+
+        <!-- HTMX swaps inline run results here -->
+        <div id="run-results-{{ version.id }}"></div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="alert alert-info" style="margin-bottom:20px">
+      No versions yet — save your first prompt version below.
+    </div>
+  {% endif %}
+</div>
+
+<!-- ── Save New Version Card ────────────────────────── -->
+<div class="card">
+  <div class="card-header">
+    <h2>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-light)">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+        <polyline points="7 3 7 8 15 8"></polyline>
+      </svg>
+      Commit New Version
+    </h2>
+  </div>
+  <div class="card-body">
+    <form method="POST" action="/p/{{ prompt.id }}/v">
+      <div class="form-group">
+        <label for="content">Prompt Content <span class="hint">(use {variable_name} syntax for variables)</span></label>
+        <textarea id="content" name="content" class="code" placeholder="You are a book recommendation assistant. Given the following inputs:&#10;Genre: {genre}&#10;Origin: {origin}&#10;&#10;Suggest 3 books with a 2-line synopsis." required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="commit_message">Commit Message <span class="hint">(what changed in this iteration?)</span></label>
+        <input type="text" id="commit_message" name="commit_message" placeholder='e.g. "added author constraint" or "more concise output"'>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        Save Version
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ── Compare Versions (Diff) ──────────────────────── -->
+{% if prompt.versions | length >= 2 %}
+<div class="card">
+  <div class="card-header">
+    <h2>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-light)">
+        <circle cx="18" cy="18" r="3"></circle>
+        <circle cx="6" cy="6" r="3"></circle>
+        <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+        <line x1="6" y1="9" x2="6" y2="21"></line>
+      </svg>
+      Compare Versions (Diff)
+    </h2>
+  </div>
+  <div class="card-body">
+    <form method="GET" action="/p/{{ prompt.id }}/diff">
+      <div class="diff-select-bar">
+        <label style="margin:0">Base:</label>
+        <select name="v1">
+          {% for v in prompt.versions %}
+          <option value="{{ v.version_number }}">v{{ v.version_number }} {% if v.commit_message %}— {{ v.commit_message }}{% endif %}</option>
+          {% endfor %}
+        </select>
+        <span class="diff-select-arrow">→</span>
+        <label style="margin:0">Compare with:</label>
+        <select name="v2">
+          {% for v in prompt.versions | reverse %}
+          <option value="{{ v.version_number }}">v{{ v.version_number }} {% if v.commit_message %}— {{ v.commit_message }}{% endif %}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-secondary">
+          View Diff
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Test Cases Section ───────────────────────────── -->
+<div class="card">
+  <div class="card-header">
+    <h2>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--emerald)">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      Test Cases
+    </h2>
+    <span class="badge badge-neutral">{{ test_cases | length }} defined</span>
+  </div>
+
+  {% if test_cases %}
+  <div class="table-wrap" style="border:none; border-radius:0; border-bottom:1px solid var(--border)">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:60px">#</th>
+          <th>Input Variables (JSON)</th>
+          <th>Expected Output (Reference)</th>
+          <th style="width:140px">Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tc in test_cases %}
+        <tr>
+          <td><span class="tc-num-badge">#{{ loop.index }}</span></td>
+          <td>
+            {% if tc.input_variables %}
+            <code class="tc-vars">{{ tc.input_variables }}</code>
+            {% else %}
+            <span style="color:var(--text-subtle); font-style:italic">None</span>
+            {% endif %}
+          </td>
+          <td style="color:var(--text-muted)">
+            {{ tc.expected_output or '—' }}
+          </td>
+          <td style="color:var(--text-subtle); white-space:nowrap; font-size:12px">
+            {{ tc.created_at.strftime('%b %d, %Y') }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="card-body">
+    <h3 style="font-size:14px; font-weight:600; margin-bottom:14px; color:var(--text-main)">Add Test Case</h3>
+    <form method="POST" action="/p/{{ prompt.id }}/tc">
+      <div class="form-group">
+        <label for="input_variables">Input Variables <span class="hint">(valid JSON string matching your prompt placeholders)</span></label>
+        <input type="text" id="input_variables" name="input_variables" placeholder='{"genre": "literary fiction", "origin": "Japan"}'>
+      </div>
+      <div class="form-group">
+        <label for="expected_output">Expected Output <span class="hint">(optional reference for manual verification)</span></label>
+        <input type="text" id="expected_output" name="expected_output" placeholder="What kind of output you expect the model to return">
+      </div>
+      <button type="submit" class="btn btn-secondary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Add Test Case
+      </button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

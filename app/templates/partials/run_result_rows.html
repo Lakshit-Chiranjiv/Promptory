@@ -1,0 +1,53 @@
+<!--
+  HTMX partial — returned by POST /v/{id}/run and injected inline
+  into #run-results-{version_id} on the prompt detail page.
+-->
+{% if runs_with_tc %}
+<div class="run-results-box">
+  <div class="run-results-header">
+    <div class="run-results-summary">
+      <span class="run-dot"></span>
+      <span style="color:var(--text-main); font-weight:600">{{ runs_with_tc | length }}</span> test case{% if runs_with_tc | length != 1 %}s{% endif %} executed successfully
+    </div>
+    <a href="/v/{{ version_id }}/runs" class="btn btn-ghost btn-sm">
+      Full Run History →
+    </a>
+  </div>
+
+  <div class="run-items">
+    {% for tc, run in runs_with_tc %}
+    <div class="run-item">
+      <div class="run-item-top">
+        <div class="run-item-title">
+          <span class="tc-num-badge">Test Case #{{ tc_index.get(tc.id, loop.index) }}</span>
+          {% if tc.input_variables %}
+          <code class="tc-vars">{{ tc.input_variables }}</code>
+          {% else %}
+          <span style="color:var(--text-subtle); font-size:12px; font-style:italic">No variables</span>
+          {% endif %}
+        </div>
+        <div style="display:flex; align-items:center; gap:8px">
+          {% if run.status == 'success' %}
+          <span class="badge badge-success">✓ Success</span>
+          {% else %}
+          <span class="badge badge-error">✕ Error</span>
+          {% endif %}
+          <button type="button" class="btn-copy" onclick="copyText(this, `{{ run.actual_output | replace('`', '\\`') | replace('$', '\\$') }}`)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy Output
+          </button>
+        </div>
+      </div>
+      <pre class="output-block">{{ run.actual_output }}</pre>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<div class="alert alert-warn" style="margin-top:14px">
+  <span>⚠ No test cases found for this prompt. Please add at least one test case below before running.</span>
+</div>
+{% endif %}

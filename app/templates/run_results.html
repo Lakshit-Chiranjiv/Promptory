@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Run History — v{{ version.version_number }} — {{ version.prompt.name }} — Promptory{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/">All Prompts</a>
+  <span class="sep">/</span>
+  <a href="/p/{{ version.prompt_id }}">{{ version.prompt.name }}</a>
+  <span class="sep">/</span>
+  <span class="current">v{{ version.version_number }} Runs</span>
+</div>
+
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>
+      Run History — v{{ version.version_number }}
+      <span class="badge badge-neutral" style="font-size:12px">{{ runs | length }} total run{% if runs | length != 1 %}s{% endif %}</span>
+    </h1>
+    <p>
+      Prompt: <strong style="color:var(--text-main)">{{ version.prompt.name }}</strong>
+      {% if version.commit_message %}
+      • <span style="color:var(--accent-light)">"{{ version.commit_message }}"</span>
+      {% endif %}
+    </p>
+  </div>
+  <div>
+    <a href="/p/{{ version.prompt_id }}" class="btn btn-secondary">
+      ← Back to Prompt
+    </a>
+  </div>
+</div>
+
+{% if runs %}
+  <div style="display:flex; flex-direction:column; gap:18px">
+    {% for run in runs %}
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+          <span class="tc-num-badge" style="font-size:12px; padding:3px 10px">
+            Test Case #{{ tc_index.get(run.test_case_id, run.test_case_id) }}
+          </span>
+          {% if run.test_case and run.test_case.input_variables %}
+          <code class="tc-vars">{{ run.test_case.input_variables }}</code>
+          {% endif %}
+        </div>
+        <div style="display:flex; align-items:center; gap:10px">
+          {% if run.status == 'success' %}
+          <span class="badge badge-success">✓ Success</span>
+          {% else %}
+          <span class="badge badge-error">✕ Error</span>
+          {% endif %}
+          <span style="font-size:12px; color:var(--text-subtle); font-family:var(--font-mono)">
+            {{ run.created_at.strftime('%b %d, %Y %H:%M') }}
+          </span>
+          <button type="button" class="btn-copy" onclick="copyText(this, `{{ run.actual_output | replace('`', '\\`') | replace('$', '\\$') }}`)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy
+          </button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:16px">
+        <pre class="output-block">{{ run.actual_output }}</pre>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-info">
+    No recorded runs for version {{ version.version_number }} yet. Go back to the prompt page to run test cases.
+  </div>
+{% endif %}
+
+<div style="margin-top:24px">
+  <a href="/p/{{ version.prompt_id }}" class="btn btn-secondary">
+    ← Back to {{ version.prompt.name }}
+  </a>
+</div>
+{% endblock %}

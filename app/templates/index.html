@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}All Prompts — Promptory{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>
+      Prompt Repository
+      <span class="badge badge-neutral" style="font-size:12px; font-weight:600">{{ prompts | length }}</span>
+    </h1>
+    <p>Git-like version control, diffs, and reproducible test runs for your LLM prompts.</p>
+  </div>
+</div>
+
+<!-- Create New Prompt Card -->
+<div class="card">
+  <div class="card-header">
+    <h2>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-light)">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Create New Prompt
+    </h2>
+  </div>
+  <div class="card-body">
+    <form method="POST" action="/">
+      <div class="form-group">
+        <label for="name">Prompt Name <span class="hint">(required)</span></label>
+        <input type="text" id="name" name="name" placeholder="e.g. Book Recommendation Assistant" required autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="description">Description <span class="hint">(optional)</span></label>
+        <input type="text" id="description" name="description" placeholder="e.g. Recommends books given genre, origin and author" autocomplete="off">
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Create Prompt
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Prompts List Grid -->
+<div style="margin-top:32px">
+  <h2 style="font-size:16px; font-weight:700; letter-spacing:-0.3px; margin-bottom:14px; color:var(--text-main)">
+    Your Prompts
+  </h2>
+
+  {% if prompts %}
+  <div class="prompts-grid">
+    {% for prompt in prompts %}
+    <a href="/p/{{ prompt.id }}" class="prompt-tile">
+      <div class="prompt-tile-top">
+        <h3>
+          <span>{{ prompt.name }}</span>
+          <span class="prompt-tile-arrow">→</span>
+        </h3>
+        {% if prompt.description %}
+        <p class="prompt-tile-desc">{{ prompt.description }}</p>
+        {% else %}
+        <p class="prompt-tile-desc" style="color:var(--text-subtle); font-style:italic">No description provided</p>
+        {% endif %}
+      </div>
+      <div class="prompt-tile-footer">
+        <span class="badge badge-blue">
+          {{ prompt.versions | length }} version{% if prompt.versions | length != 1 %}s{% endif %}
+        </span>
+        <span>Created {{ prompt.created_at.strftime('%b %d, %Y') }}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    No prompts yet — create your first prompt using the form above.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
