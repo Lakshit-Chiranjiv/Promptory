@@ -1,0 +1,38 @@
+# ─────────────────────────────────────────────────────────────────
+# Promptory — docker-compose.yml
+#
+# Usage:
+#   docker compose up           # start (builds image if not built yet)
+#   docker compose up --build   # force rebuild image
+#   docker compose up -d        # run in background (detached)
+#   docker compose down         # stop containers (data is preserved in ./data/)
+#   docker compose logs -f      # follow live logs
+# ─────────────────────────────────────────────────────────────────
+
+services:
+  promptory:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Name the container so `docker logs promptory` works
+    container_name: promptory
+
+    ports:
+      # host:container — access the app at http://localhost:8000
+      - "8000:8000"
+
+    # Pass every variable from your .env file into the container.
+    # The app reads LLM_PROVIDER, LLM_API_KEY, LLM_MODEL, LLM_BASE_URL
+    # from os.environ at startup — they flow in here automatically.
+    env_file:
+      - .env
+
+    volumes:
+      # Mount the local ./data directory into the container.
+      # This is how the SQLite database (promptvc.db) survives
+      # `docker compose down` and `docker compose up` cycles.
+      # Without this, the DB would be wiped every time the container stops.
+      - ./data:/app/data
+
+    restart: unless-stopped

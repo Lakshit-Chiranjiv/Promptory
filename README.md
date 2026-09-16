@@ -46,6 +46,43 @@ Built with FastAPI + SQLite + HTMX. No cloud account needed. Runs on your machin
 
 ## Quickstart
 
+Two ways to run Promptory. Pick one.
+
+---
+
+### 🐳 Option A — Docker (recommended, zero Python setup)
+
+**Requires:** [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+```bash
+# 1. Clone
+git clone https://github.com/your-username/Promptory.git
+cd Promptory
+
+# 2. Configure your LLM provider
+cp .env.example .env
+# Open .env and fill in LLM_PROVIDER, LLM_API_KEY, LLM_MODEL
+
+# 3. Start
+docker compose up
+```
+
+Open **`http://localhost:8000`**. Done.
+
+The SQLite database is saved to `./data/` on your machine — it survives `docker compose down` and restart cycles.
+
+Useful commands:
+```bash
+docker compose up --build   # force rebuild after code changes
+docker compose up -d        # run in background
+docker compose down         # stop
+docker compose logs -f      # follow live logs
+```
+
+---
+
+### 🐍 Option B — Python (local dev)
+
 ### 1. Clone the repo
 
 ```bash

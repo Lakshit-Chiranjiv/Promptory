@@ -1,0 +1,39 @@
+# ── Files never needed inside the Docker image ────────────────────
+
+# Virtual environment (Docker installs deps fresh inside the image)
+.venv/
+venv/
+
+# Database file (mounted as a volume from the host — never bake it in)
+data/
+
+# Git history
+.git/
+.gitignore
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Environment files (secrets must never be baked into an image layer)
+.env
+.env.*
+!.env.example
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# Build / dist artefacts
+dist/
+build/
+*.egg-info/
+
+# uv cache
+.uv/
+uv.lock
